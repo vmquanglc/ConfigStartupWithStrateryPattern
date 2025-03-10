@@ -13,19 +13,14 @@ namespace Api.Configuaration
                 ((IBuilderService)Activator.CreateInstance(type)).Install(service);
             }
         }
-        public static WebApplication SetupApplication(this WebApplication app)
+        public static void Install(this WebApplication app)
         {
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            var implementors = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(type => !type.IsInterface && typeof(IWebApplicationConfig).IsAssignableFrom(type));
+            foreach (var type in implementors)
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                ((IWebApplicationConfig)Activator.CreateInstance(type)).Install(app);
             }
-
-            app.UseAuthorization();
-
-            app.MapControllers();
-            return app;
         }
     }
 }
